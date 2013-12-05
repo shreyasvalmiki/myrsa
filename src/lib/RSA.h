@@ -8,11 +8,20 @@
 #ifndef RSA_H_
 #define RSA_H_
 #include <vector>
+#include <string>
+#include <string.h>
 
 class TBKey{
 public:
 	long n, key;
 };
+
+class Output{
+public:
+	std::string text;
+	int size;
+};
+
 class MyRSA {
 private:
 	TBKey getTbKey(char*);
@@ -30,6 +39,9 @@ public:
 	void handleOpensslError(void);
 	int* passwdCallback(char *pcszBuff,int size,int rwflag, void *pPass);
 	bool checkMessageSize(long,long,int);
+	std::string getEncryptedText(char*,char*,char*,int);
+	std::string getDecryptedText(char*,char*,char*,int);
+
 };
 
 #endif /* RSA_H_ */

@@ -25,6 +25,8 @@
 using namespace std;
 
 
+
+
 /**
  * Constructor
  */
@@ -185,12 +187,8 @@ vector<char> MyRSA::readFromFile(char* mFilename){
 	}
 	return msg;
 }
-/**
- * OpenSSL encryption
- *
- * Ref: OpenSSL.org, stackoverflow.com, cplusplus.com
- */
-void MyRSA::osslEncrypt(char* keyFilename, char* mFilename, char* cFilename, int type){
+
+string MyRSA::getEncryptedText(char* keyFilename, char* mFilename, char* cFilename, int type){
 	FILE * keyFile = fopen(keyFilename,"rb");
 	RSA *key;
 	char *err;
@@ -236,24 +234,13 @@ void MyRSA::osslEncrypt(char* keyFilename, char* mFilename, char* cFilename, int
 			ERR_error_string(ERR_get_error(), err);
 			fprintf(stderr, "ERROR: Error encrypting message: %s\n", err);
 		}
-
-		FILE *oFile = fopen(cFilename,"w");
-		//Save it in a file
-		fwrite (encrypt , sizeof(char), RSA_size(pPubKey), oFile);
-		fclose(oFile);
+		string s(reinterpret_cast<char*>(encrypt));
+		return s;
 	}
-	else{
-		fprintf(stderr,"ERROR: Message too long to encrypt\n");
-	}
+	return "";
 
 }
-
-/**
- * OpenSSL Decryption
- *
- * Ref: OpenSSL.org, stackoverflow.com, cplusplus.com
- */
-void MyRSA::osslDecrypt(char* keyFilename, char* cFilename, char* mFilename, int type){
+string MyRSA::getDecryptedText(char* keyFilename, char* mFilename, char* cFilename, int type){
 	FILE * keyFile = fopen(keyFilename,"r");
 	RSA *key;
 	char *err;
@@ -300,12 +287,42 @@ void MyRSA::osslDecrypt(char* keyFilename, char* cFilename, char* mFilename, int
 		fprintf(stderr, "Error decrypting message: %s\n", err);
 	}
 	char c = decrypt[0];
-	int dSize = 1;
-	while(c != '\0'){
-		c = decrypt[dSize++];
+	string s(reinterpret_cast<char*>(decrypt));
+	return s;
+
+}
+
+
+/**
+ * OpenSSL encryption
+ *
+ * Ref: OpenSSL.org, stackoverflow.com, cplusplus.com
+ */
+void MyRSA::osslEncrypt(char* keyFilename, char* mFilename, char* cFilename, int type){
+
+	string s = getEncryptedText(keyFilename, mFilename, cFilename, type);
+	if(s.compare("") != 0){
+
+		FILE *oFile = fopen(cFilename,"w");
+		//Save it in a file
+		fwrite (s.c_str() , sizeof(char), s.length(), oFile);
+		fclose(oFile);
 	}
+	else{
+		fprintf(stderr,"ERROR: Message too long to encrypt\n");
+	}
+
+}
+
+/**
+ * OpenSSL Decryption
+ *
+ * Ref: OpenSSL.org, stackoverflow.com, cplusplus.com
+ */
+void MyRSA::osslDecrypt(char* keyFilename, char* cFilename, char* mFilename, int type){
+	string s = getDecryptedText(keyFilename, mFilename, cFilename, type);
 	FILE *oFile = fopen(mFilename,"w");
 	//Save the decrypted message in the file
-	fwrite (decrypt , sizeof(char),dSize-1, oFile);
+	fwrite (s.c_str() , sizeof(char),s.length(), oFile);
 	fclose(oFile);
 }
