@@ -11,3 +11,10 @@
 *.lai
 *.la
 *.a
+
+# Temp files
+*~
+
+# Target directories
+bin/
+debug/
